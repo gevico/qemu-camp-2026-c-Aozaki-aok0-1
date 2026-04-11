@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <execinfo.h>
 
-#ifdef TODO
+#if DEBUG_LEVEL >= 2
 
-#define DEBUG_PRINT(fmt, ...) 
+#define DEBUG_PRINT(fmt, ...) do { printf("DEBUG: func=%s, line=%d, " fmt "\n", __func__, __LINE__, ##__VA_ARGS__); } while (0)
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+
 
 #else
 

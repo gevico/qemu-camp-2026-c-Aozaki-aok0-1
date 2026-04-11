@@ -21,24 +21,90 @@ typedef struct {
 
 static int rb_init(ring_buffer_t *rb, size_t capacity) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (rb == NULL || capacity == 0) {
+        return -1;
+    }
+
+    rb->buf = (int *)malloc(sizeof(int) * capacity);
+    if (rb->buf == NULL) {
+        return -1;
+    }
+
+    rb->capacity = capacity;
+    rb->head = 0;
+    rb->tail = 0;
+    rb->count = 0;
+
+    if (pthread_mutex_init(&rb->mtx, NULL) != 0) {
+        free(rb->buf);
+        rb->buf = NULL;
+        return -1;
+    }
+    if (pthread_cond_init(&rb->not_full, NULL) != 0) {
+        pthread_mutex_destroy(&rb->mtx);
+        free(rb->buf);
+        rb->buf = NULL;
+        return -1;
+    }
+    if (pthread_cond_init(&rb->not_empty, NULL) != 0) {
+        pthread_cond_destroy(&rb->not_full);
+        pthread_mutex_destroy(&rb->mtx);
+        free(rb->buf);
+        rb->buf = NULL;
+        return -1;
+    }
+
+    return 0;
 }
 
 static void rb_destroy(ring_buffer_t *rb) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (rb == NULL) {
+        return;
+    }
+
+    pthread_cond_destroy(&rb->not_empty);
+    pthread_cond_destroy(&rb->not_full);
+    pthread_mutex_destroy(&rb->mtx);
+    free(rb->buf);
+    rb->buf = NULL;
 }
 
 /* 入队：满则等待 not_full */
 static void rb_push(ring_buffer_t *rb, int val) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    pthread_mutex_lock(&rb->mtx);
+    while (rb->count == rb->capacity) {
+        pthread_cond_wait(&rb->not_full, &rb->mtx);
+    }
+
+    rb->buf[rb->tail] = val;
+    rb->tail = (rb->tail + 1) % rb->capacity;
+    rb->count++;
+
+    pthread_cond_signal(&rb->not_empty);
+    pthread_mutex_unlock(&rb->mtx);
 }
 
 /* 出队：空则等待 not_empty */
 static int rb_pop(ring_buffer_t *rb, int *out) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (out == NULL) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&rb->mtx);
+    while (rb->count == 0) {
+        pthread_cond_wait(&rb->not_empty, &rb->mtx);
+    }
+
+    *out = rb->buf[rb->head];
+    rb->head = (rb->head + 1) % rb->capacity;
+    rb->count--;
+
+    pthread_cond_signal(&rb->not_full);
+    pthread_mutex_unlock(&rb->mtx);
+    return 0;
 }
 
 typedef struct {
@@ -54,12 +120,26 @@ typedef struct {
 
 static void *producer(void *arg) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    producer_arg_t *pa = (producer_arg_t *)arg;
+    for (size_t i = 0; i < pa->n; ++i) {
+        rb_push(pa->rb, pa->data[i]);
+    }
+    return NULL;
 }
 
 static void *consumer(void *arg) {
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    consumer_arg_t *ca = (consumer_arg_t *)arg;
+    for (size_t i = 0; i < ca->n; ++i) {
+        int v = 0;
+        rb_pop(ca->rb, &v);
+        if (i > 0) {
+            printf(",");
+        }
+        printf("%d", v);
+    }
+    printf("\n");
+    return NULL;
 }
 
 int main(void) {

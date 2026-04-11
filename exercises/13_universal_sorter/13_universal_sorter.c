@@ -41,7 +41,64 @@ void processFile(const char *filename) {
 
     switch (choice) {
         // TODO: 在这里添加你的代码
-        // I AM NOT DONE
+        
+        case 1: {
+            int arr[20];
+            for (int i = 0; i < n; i++) {
+                if (fscanf(fin, "%d", &arr[i]) != 1) {
+                    printf("错误: 文件 %s 格式不正确\n", filename);
+                    fclose(fin);
+                    return;
+                }
+            }
+            sort(arr, n, sizeof(int), compareInt);
+            printf("排序后的整数:\n");
+            for (int i = 0; i < n; i++) {
+                printf("%d ", arr[i]);
+            }
+            printf("\n");
+            break;
+        }
+        case 2: {
+            float arr[20];
+            for (int i = 0; i < n; i++) {
+                if (fscanf(fin, "%f", &arr[i]) != 1) {
+                    printf("错误: 文件 %s 格式不正确\n", filename);
+                    fclose(fin);
+                    return;
+                }
+            }
+            sort(arr, n, sizeof(float), compareFloat);
+            printf("排序后的浮点数:\n");
+            for (int i = 0; i < n; i++) {
+                printf("%f ", arr[i]);
+            }
+            printf("\n");
+            break;
+        }
+        case 3: {
+            char *arr[20];
+            for (int i = 0; i < n; i++) {
+                char buffer[100];
+                if (fscanf(fin, "%s", buffer) != 1) {
+                    printf("错误: 文件 %s 格式不正确\n", filename);
+                    fclose(fin);
+                    return;
+                }
+                arr[i] = strdup(buffer); // 复制字符串
+            }
+            sort(arr, n, sizeof(char*), compareString);
+            printf("排序后的字符串:\n");
+            for (int i = 0; i < n; i++) {
+                printf("%s ", arr[i]);
+                free(arr[i]); // 释放内存
+            }
+            printf("\n");
+            break;
+        }
+        default:
+            printf("错误: 文件 %s 中的选择无效\n", filename);
+            break;
     }
 
     fclose(fin);

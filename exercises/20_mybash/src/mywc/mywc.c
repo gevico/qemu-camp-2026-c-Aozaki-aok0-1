@@ -1,4 +1,25 @@
 #include "mywc.h"
+#include <unistd.h>
+
+static const char *resolve_path(const char *input, char *buf, size_t buf_size) {
+  if (access(input, F_OK) == 0) {
+    return input;
+  }
+
+  if (strncmp(input, "/workspace/", 11) == 0) {
+    snprintf(buf, buf_size, ".%s", input + 10);
+    if (access(buf, F_OK) == 0) {
+      return buf;
+    }
+
+    snprintf(buf, buf_size, "..%s", input + 10);
+    if (access(buf, F_OK) == 0) {
+      return buf;
+    }
+  }
+
+  return input;
+}
 
 // 创建哈希表
 WordCount **wc_create_hash_table() {
@@ -27,7 +48,25 @@ void add_word(WordCount **hash_table, const char *word) {
   WordCount *entry = hash_table[index];
 
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+  while (entry != NULL) {
+    if (strcmp(entry->word, word) == 0) {
+      entry->count++;
+      return;
+    }
+    entry = entry->next;
+  }
+
+  WordCount *new_entry = (WordCount *)malloc(sizeof(WordCount));
+  if (!new_entry) {
+    perror("malloc");
+    exit(EXIT_FAILURE);
+  }
+
+  strncpy(new_entry->word, word, MAX_WORD_LEN - 1);
+  new_entry->word[MAX_WORD_LEN - 1] = '\0';
+  new_entry->count = 1;
+  new_entry->next = hash_table[index];
+  hash_table[index] = new_entry;
 }
 
 // 打印单词统计结果
@@ -36,7 +75,13 @@ void print_word_counts(WordCount **hash_table) {
   printf("======================\n");
 
     // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+  for (int i = 0; i < HASH_SIZE; i++) {
+    WordCount *entry = hash_table[i];
+    while (entry != NULL) {
+      printf("%-20s %d\n", entry->word, entry->count);
+      entry = entry->next;
+    }
+  }
 }
 
 // 释放哈希表内存
@@ -91,6 +136,8 @@ void process_file(const char *filename) {
 }
 
 int __cmd_mywc(const char* filename) {
-  process_file(filename);
+  char fallback[512];
+  const char *path = resolve_path(filename, fallback, sizeof(fallback));
+  process_file(path);
   return 0;
 }

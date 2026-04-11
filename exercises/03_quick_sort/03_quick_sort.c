@@ -13,8 +13,28 @@ typedef struct {
 Student students[MAX_STUDENTS];
 
 void quick_sort(int left, int right) {
-    // TODO: 在这里添加你的代码
-    // I AM NOT DONE
+    if (left >= right) {
+        return;
+    }
+    int pivot = students[right].score; // 选择最后一个元素作为基准
+    int i = left - 1; // i 指向小于基准的最后一个元素
+    for (int j = left; j < right; j++) {
+        if (students[j].score >= pivot) { // 大于等于基准的元素
+            i++;
+            // 交换 students[i] 和 students[j]
+            Student temp = students[i];
+            students[i] = students[j];
+            students[j] = temp;
+        }
+    }
+    // 将基准元素放到正确的位置
+    Student temp = students[i + 1];
+    students[i + 1] = students[right];
+    students[right] = temp;
+    
+    // 递归排序基准左侧和右侧区间
+    quick_sort(left, i);
+    quick_sort(i + 2, right);
 }
 
 int main(void) {
