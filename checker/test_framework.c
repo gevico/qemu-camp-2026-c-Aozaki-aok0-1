@@ -155,22 +155,19 @@
             snprintf(
                 run_cmd,
                 sizeof(run_cmd),
-                "EX_DIR=exercises/%s; "
-                "[ -d \"$EX_DIR\" ] || EX_DIR=../exercises/%s; "
-                "[ -d \"$EX_DIR\" ] || EX_DIR=../../exercises/%s; "
-                "if [ -d \"$EX_DIR\" ]; then EX_DIR=$(cd \"$EX_DIR\" && pwd); fi; "
+                "EX_DIR=; "
+                "for base in . .. ../.. ../../..; do "
+                "  if [ -d \"$base/exercises/%s\" ]; then EX_DIR=\"$base/exercises/%s\"; break; fi; "
+                "done; "
                 "ROOT_DIR=$(pwd); "
-                "[ -n \"$EX_DIR\" ] && ROOT_DIR=$(cd \"$EX_DIR/../..\" && pwd); "
-                "SCRIPT=./test_%s.sh; "
-                "[ -f \"$SCRIPT\" ] || SCRIPT=tests/test_%s.sh; "
-                "[ -f \"$SCRIPT\" ] || SCRIPT=../tests/test_%s.sh; "
-                "[ -f \"$SCRIPT\" ] || SCRIPT=../../tests/test_%s.sh; "
-                "[ -f \"$SCRIPT\" ] || SCRIPT=$ROOT_DIR/tests/test_%s.sh; "
-                "[ -f \"$SCRIPT\" ] || SCRIPT=$EX_DIR/../../tests/test_%s.sh; "
-                "if [ -f \"$SCRIPT\" ]; then bash \"$SCRIPT\"; "
+                "if [ -n \"$EX_DIR\" ]; then ROOT_DIR=$(cd \"$EX_DIR/../..\" && pwd); fi; "
+                "SCRIPT=; "
+                "for base in \"$ROOT_DIR\" \"$ROOT_DIR/..\" \"$ROOT_DIR/../..\" . .. ../.. ../../..; do "
+                "  if [ -f \"$base/tests/test_%s.sh\" ]; then SCRIPT=\"$base/tests/test_%s.sh\"; break; fi; "
+                "  if [ -f \"$base/test_%s.sh\" ]; then SCRIPT=\"$base/test_%s.sh\"; break; fi; "
+                "done; "
+                "if [ -n \"$SCRIPT\" ]; then bash \"$SCRIPT\"; "
                 "else echo 'test script not found'; exit 127; fi",
-                executable,
-                executable,
                 executable,
                 executable,
                 executable,
