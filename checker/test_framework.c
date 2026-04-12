@@ -70,9 +70,10 @@
   * 编译并运行程序，捕获输出
   */
  int compile_and_run(const char* source_file, const char* executable, char* output, size_t output_size, int is_make) {
-     char compile_cmd[512];
-     char run_cmd[256];
+    char compile_cmd[1024];
+    char run_cmd[1024];
      FILE* fp;
+    size_t output_written = 0;
      
      // 清空输出缓冲区
      memset(output, 0, output_size);
@@ -80,7 +81,16 @@
     switch (is_make) {
         case 1:
         case 2: {
-            snprintf(compile_cmd, sizeof(compile_cmd), "cd ../exercises/%s && make 2>&1", executable);
+            snprintf(
+                compile_cmd,
+                sizeof(compile_cmd),
+                "if [ -d exercises/%s ]; then cd exercises/%s && make 2>&1; "
+                "elif [ -d ../exercises/%s ]; then cd ../exercises/%s && make 2>&1; "
+                "else echo 'exercise dir not found'; exit 127; fi",
+                executable,
+                executable,
+                executable,
+                executable);
             fp = popen(compile_cmd, "r");
             if (fp == NULL) {
                 strncpy(output, "无法执行编译命令", output_size - 1);
@@ -93,10 +103,30 @@
             if (strstr(source_file, "prime") != NULL) {
                 // 包含数学函数的程序需要链接数学库
                 snprintf(compile_cmd, sizeof(compile_cmd), 
-                        "cd ../exercises/%s && gcc -Wall -Wextra -std=c11 -o %s %s.c -lm 2>&1", executable, executable, executable);
+                        "if [ -d exercises/%s ]; then cd exercises/%s && gcc -Wall -Wextra -std=c11 -o %s %s.c -lm 2>&1; "
+                        "elif [ -d ../exercises/%s ]; then cd ../exercises/%s && gcc -Wall -Wextra -std=c11 -o %s %s.c -lm 2>&1; "
+                        "else echo 'exercise dir not found'; exit 127; fi",
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable);
             } else {
                 snprintf(compile_cmd, sizeof(compile_cmd), 
-                        "cd ../exercises/%s && gcc -Wall -Wextra -std=c11 -o %s %s.c 2>&1", executable, executable, executable);
+                        "if [ -d exercises/%s ]; then cd exercises/%s && gcc -Wall -Wextra -std=c11 -o %s %s.c 2>&1; "
+                        "elif [ -d ../exercises/%s ]; then cd ../exercises/%s && gcc -Wall -Wextra -std=c11 -o %s %s.c 2>&1; "
+                        "else echo 'exercise dir not found'; exit 127; fi",
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable,
+                        executable);
             }
             
             // 编译程序
@@ -110,7 +140,14 @@
     
      
      char compile_output[4096] = {0};
-     size_t bytes_read = fread(compile_output, 1, sizeof(compile_output) - 1, fp);
+     size_t bytes_read;
+     while ((bytes_read = fread(compile_output + output_written, 1, (sizeof(compile_output) - 1) - output_written, fp)) > 0) {
+         output_written += bytes_read;
+         if (output_written >= sizeof(compile_output) - 1) {
+             break;
+         }
+     }
+     compile_output[output_written] = '\0';
      int compile_status = pclose(fp);
      
      // 检查编译是否成功
@@ -122,7 +159,19 @@
      // 运行程序
      switch (is_make) {
         case 2: {
-            snprintf(run_cmd, sizeof(run_cmd), "bash ./test_%s.sh", executable);
+            snprintf(
+                run_cmd,
+                sizeof(run_cmd),
+                "if [ -f tests/test_%s.sh ]; then bash tests/test_%s.sh; "
+                "elif [ -f ./test_%s.sh ]; then bash ./test_%s.sh; "
+                "elif [ -f ../tests/test_%s.sh ]; then bash ../tests/test_%s.sh; "
+                "else echo 'test script not found'; exit 127; fi",
+                executable,
+                executable,
+                executable,
+                executable,
+                executable,
+                executable);
             fp = popen(run_cmd, "r");
             if (fp == NULL) {
                 strncpy(output, "无法执行程序", output_size - 1);
@@ -132,7 +181,18 @@
         break;
         case 1:
         default: {
-            snprintf(run_cmd, sizeof(run_cmd), "cd ../exercises/%s && ./%s", executable, executable);
+            snprintf(
+                run_cmd,
+                sizeof(run_cmd),
+                "if [ -d exercises/%s ]; then cd exercises/%s && ./%s; "
+                "elif [ -d ../exercises/%s ]; then cd ../exercises/%s && ./%s; "
+                "else echo 'exercise dir not found'; exit 127; fi",
+                executable,
+                executable,
+                executable,
+                executable,
+                executable,
+                executable);
             fp = popen(run_cmd, "r");
             if (fp == NULL) {
                 strncpy(output, "无法执行程序", output_size - 1);
@@ -144,8 +204,14 @@
      
      
      // 读取程序输出
-     bytes_read = fread(output, 1, output_size - 1, fp);
-     output[bytes_read] = '\0';
+     output_written = 0;
+     while ((bytes_read = fread(output + output_written, 1, (output_size - 1) - output_written, fp)) > 0) {
+         output_written += bytes_read;
+         if (output_written >= output_size - 1) {
+             break;
+         }
+     }
+     output[output_written] = '\0';
      
      int run_status = pclose(fp);
      return run_status;
