@@ -155,12 +155,20 @@
             snprintf(
                 run_cmd,
                 sizeof(run_cmd),
+                "EX_DIR=exercises/%s; "
+                "[ -d \"$EX_DIR\" ] || EX_DIR=../exercises/%s; "
+                "[ -d \"$EX_DIR\" ] || EX_DIR=../../exercises/%s; "
                 "SCRIPT=./test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=tests/test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=../tests/test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=../../tests/test_%s.sh; "
+                "[ -f \"$SCRIPT\" ] || SCRIPT=$EX_DIR/../../tests/test_%s.sh; "
                 "if [ -f \"$SCRIPT\" ]; then bash \"$SCRIPT\"; "
                 "else echo 'test script not found'; exit 127; fi",
+                executable,
+                executable,
+                executable,
+                executable,
                 executable,
                 executable,
                 executable,
