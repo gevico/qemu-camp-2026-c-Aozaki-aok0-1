@@ -9,7 +9,7 @@
 PWD := $(shell pwd)
 MAKE_SUB := $(MAKE) --no-print-directory -s
 
-# 所有子模块目录（静态库：生成 .a）
+# 所有子模块目录（静态库：生成 .a）1
 SUBDIRS := \
 	mysed \
 	myfile \
