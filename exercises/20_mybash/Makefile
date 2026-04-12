@@ -7,6 +7,7 @@
 # =============================================
 
 PWD := $(shell pwd)
+MAKE_SUB := $(MAKE) --no-print-directory -s
 
 # 所有子模块目录（静态库：生成 .a）
 SUBDIRS := \
@@ -20,19 +21,19 @@ all: mybash
 
 # 通用规则：构建每个子模块（静态库）
 $(SUBDIRS):
-	$(MAKE) -C src/$@ OBJDIR=$(PWD)/obj/$@ BINDIR=$(PWD)/bin
+	@$(MAKE_SUB) -C src/$@ OBJDIR=$(PWD)/obj/$@ BINDIR=$(PWD)/bin
 
 # 构建 mybash（可执行文件，依赖上面的库）
 mybash: $(SUBDIRS)
-	$(MAKE) -C src/mybash OBJDIR=$(PWD)/obj/mybash BINDIR=$(PWD)/bin LINKLIBS="-L$(PWD)/obj/mysed -L$(PWD)/obj/mywc -L$(PWD)/obj/mytrans -L$(PWD)/obj/myfile"
+	@$(MAKE_SUB) -C src/mybash OBJDIR=$(PWD)/obj/mybash BINDIR=$(PWD)/bin LINKLIBS="-L$(PWD)/obj/mysed -L$(PWD)/obj/mywc -L$(PWD)/obj/mytrans -L$(PWD)/obj/myfile"
 
 # 清理所有生成的文件
 clean:
-	$(MAKE) -C src/mybash clean OBJDIR=$(PWD)/obj/mybash BINDIR=$(PWD)/bin
-	$(MAKE) -C src/myfile clean OBJDIR=$(PWD)/obj/myfile BINDIR=$(PWD)/bin
-	$(MAKE) -C src/mysed clean OBJDIR=$(PWD)/obj/mysed BINDIR=$(PWD)/bin
-	$(MAKE) -C src/mytrans clean OBJDIR=$(PWD)/obj/mytrans BINDIR=$(PWD)/bin
-	$(MAKE) -C src/mywc clean OBJDIR=$(PWD)/obj/mywc BINDIR=$(PWD)/bin
-	rm -rf $(PWD)/bin $(PWD)/obj
+	@$(MAKE_SUB) -C src/mybash clean OBJDIR=$(PWD)/obj/mybash BINDIR=$(PWD)/bin
+	@$(MAKE_SUB) -C src/myfile clean OBJDIR=$(PWD)/obj/myfile BINDIR=$(PWD)/bin
+	@$(MAKE_SUB) -C src/mysed clean OBJDIR=$(PWD)/obj/mysed BINDIR=$(PWD)/bin
+	@$(MAKE_SUB) -C src/mytrans clean OBJDIR=$(PWD)/obj/mytrans BINDIR=$(PWD)/bin
+	@$(MAKE_SUB) -C src/mywc clean OBJDIR=$(PWD)/obj/mywc BINDIR=$(PWD)/bin
+	@rm -rf $(PWD)/bin $(PWD)/obj
 
 .PHONY: all $(SUBDIRS) mybash clean

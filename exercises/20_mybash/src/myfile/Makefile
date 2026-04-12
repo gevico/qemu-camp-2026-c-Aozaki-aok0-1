@@ -1,7 +1,7 @@
 # src/myfile/Makefile
 
-CC = gcc
-CFLAGS = -Wall -I../../include -g -fPIE
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -std=c11 -I../../include -g -fPIE
 
 # 库名称
 LIBNAME := myfile

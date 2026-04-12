@@ -4,6 +4,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+static char *dup_string(const char *src) {
+  size_t len;
+  char *dst;
+
+  if (src == NULL) {
+    return NULL;
+  }
+
+  len = strlen(src) + 1;
+  dst = (char *)malloc(len);
+  if (dst == NULL) {
+    return NULL;
+  }
+
+  memcpy(dst, src, len);
+  return dst;
+}
+
 // djb2 哈希函数（经典字符串哈希，分布均匀）
 unsigned long hash_function(const char *str) {
   unsigned long hash = 5381;
@@ -59,7 +77,7 @@ int hash_table_insert(HashTable *table, const char *key, const char *value) {
     // TODO: 在这里添加你的代码
   while (node) {
     if (strcmp(node->key, key) == 0) {
-      char *new_value = strdup(value);
+      char *new_value = dup_string(value);
       if (!new_value) {
         return 0;
       }
@@ -75,8 +93,8 @@ int hash_table_insert(HashTable *table, const char *key, const char *value) {
     return 0;
   }
 
-  new_node->key = strdup(key);
-  new_node->value = strdup(value);
+  new_node->key = dup_string(key);
+  new_node->value = dup_string(value);
   if (!new_node->key || !new_node->value) {
     free(new_node->key);
     free(new_node->value);

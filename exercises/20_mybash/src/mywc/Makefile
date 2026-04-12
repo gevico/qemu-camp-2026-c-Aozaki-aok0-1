@@ -1,7 +1,7 @@
 # src/mywc/Makefile
 
-CC = gcc
-CFLAGS = -Wall -I../../include
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -std=c11 -I../../include
 
 # 库名称
 LIBNAME := mywc

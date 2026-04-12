@@ -41,7 +41,7 @@ void print_elf_type(uint16_t e_type) {
     default:
       if (e_type >= ET_LOOS && e_type <= ET_HIOS)
         type_str = "OS-Specific";
-      else if (e_type >= ET_LOPROC && e_type <= ET_HIPROC)
+      else if (e_type >= ET_LOPROC)
         type_str = "Processor-Specific";
       else
         type_str = "Invalid";
