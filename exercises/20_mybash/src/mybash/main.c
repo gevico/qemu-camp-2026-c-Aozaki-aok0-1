@@ -9,6 +9,33 @@
 #define MAX_INPUT 1024
 #define MAX_ARGS 64
 
+static char *dup_string(const char *src) {
+  size_t len;
+  char *dst;
+
+  if (src == NULL) {
+    return NULL;
+  }
+
+  len = strlen(src) + 1;
+  dst = (char *)malloc(len);
+  if (dst == NULL) {
+    return NULL;
+  }
+
+  memcpy(dst, src, len);
+  return dst;
+}
+
+static void free_args(char **args, int argc) {
+  int i;
+
+  for (i = 0; i < argc; i++) {
+    free(args[i]);
+    args[i] = NULL;
+  }
+}
+
 // ======================
 // 自定义命令系统
 // ======================
@@ -76,7 +103,6 @@ int parse_input(char *input, char **args) {
   int i = 0;
   int in_quotes = 0;
   char *buf = input;
-  char *arg_start = NULL;
   char arg_buf[MAX_INPUT];  // 临时存储当前正在解析的参数
   int arg_buf_idx = 0;
 
@@ -91,7 +117,13 @@ int parse_input(char *input, char **args) {
       } else if ((c == ' ' || c == '\t') && !in_quotes) {
         if (arg_buf_idx > 0) {
           arg_buf[arg_buf_idx] = '\0';
-          args[i++] = strdup(arg_buf);
+          args[i] = dup_string(arg_buf);
+          if (args[i] == NULL) {
+            free_args(args, i);
+            args[0] = NULL;
+            return 0;
+          }
+          i++;
           arg_buf_idx = 0;
         }
       } else {
@@ -106,7 +138,13 @@ int parse_input(char *input, char **args) {
   // 处理最后一个参数（循环结束后可能还有未加入的）
   if (arg_buf_idx > 0) {
       arg_buf[arg_buf_idx] = '\0';
-      args[i++] = strdup(arg_buf);
+      args[i] = dup_string(arg_buf);
+      if (args[i] == NULL) {
+        free_args(args, i);
+        args[0] = NULL;
+        return 0;
+      }
+      i++;
   }
 
   args[i] = NULL;  // exec-style NULL结尾
@@ -144,6 +182,7 @@ int main(int argc, char *argv[]) {
 
       // 处理内置命令
       if (is_builtin_command(args)) {
+        free_args(args, argc_parsed);
         continue;
       }
 
@@ -174,6 +213,8 @@ int main(int argc, char *argv[]) {
       if (!found) {
         fprintf(stderr, "mybash: command not found: %s\n", cmd_name);
       }
+
+      free_args(args, argc_parsed);
     }
 
     fclose(file);
@@ -199,6 +240,7 @@ int main(int argc, char *argv[]) {
       }
 
       if (is_builtin_command(args)) {
+        free_args(args, argc);
         continue;
       }
 
@@ -224,6 +266,8 @@ int main(int argc, char *argv[]) {
       if (!found) {
         fprintf(stderr, "mybash: command not found: %s\n", cmd_name);
       }
+
+      free_args(args, argc);
     }
   }
 
