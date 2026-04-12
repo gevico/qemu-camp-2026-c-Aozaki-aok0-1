@@ -70,8 +70,8 @@
   * 编译并运行程序，捕获输出
   */
  int compile_and_run(const char* source_file, const char* executable, char* output, size_t output_size, int is_make) {
-    char compile_cmd[1024];
-    char run_cmd[1024];
+    char compile_cmd[4096];
+    char run_cmd[4096];
     char compile_output[4096] = {0};
     FILE* fp;
     size_t bytes_read;
