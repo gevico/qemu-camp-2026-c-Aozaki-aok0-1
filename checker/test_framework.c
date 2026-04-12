@@ -158,13 +158,18 @@
                 "EX_DIR=exercises/%s; "
                 "[ -d \"$EX_DIR\" ] || EX_DIR=../exercises/%s; "
                 "[ -d \"$EX_DIR\" ] || EX_DIR=../../exercises/%s; "
+                "if [ -d \"$EX_DIR\" ]; then EX_DIR=$(cd \"$EX_DIR\" && pwd); fi; "
+                "ROOT_DIR=$(pwd); "
+                "[ -n \"$EX_DIR\" ] && ROOT_DIR=$(cd \"$EX_DIR/../..\" && pwd); "
                 "SCRIPT=./test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=tests/test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=../tests/test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=../../tests/test_%s.sh; "
+                "[ -f \"$SCRIPT\" ] || SCRIPT=$ROOT_DIR/tests/test_%s.sh; "
                 "[ -f \"$SCRIPT\" ] || SCRIPT=$EX_DIR/../../tests/test_%s.sh; "
                 "if [ -f \"$SCRIPT\" ]; then bash \"$SCRIPT\"; "
                 "else echo 'test script not found'; exit 127; fi",
+                executable,
                 executable,
                 executable,
                 executable,
